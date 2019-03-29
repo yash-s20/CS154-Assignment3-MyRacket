@@ -64,14 +64,16 @@
         [else (match exp
                 [(uexp op exp1) (op (eval-exp exp1))]
                 [(bexp op exp1 exp2) (op (eval-exp exp1) (eval-exp exp2))]
-                [(lam var explam) (lambda (binds)
-                                     (begin
-                                       (push (createframe (make-hash (map (lambda (x y) (cons x (eval-exp y))) var binds)) (top)))
-                                       (let ([ret (eval-exp explam)])
-                                         (begin
-                                           (pop)
-                                           ret))))]
-                [(app exp1 explist) ((eval-exp exp1) explist)]
+                [(lam var explam) exp]
+                [(app exp1 explist) (match (eval-exp exp1)
+                                      [(lam var explam)
+                                       ((lambda (binds)
+                                          (begin
+                                            (push (createframe (make-hash (map (lambda (x y) (cons x (eval-exp y))) var binds)) (top)))
+                                            (let ([ret (eval-exp explam)])
+                                              (begin
+                                                (pop)
+                                                ret)))) explist)])]
                 [(beginexp explist) (process-beginexp explist)]
                 [(sett v/f exp) (hash-set! (frame-bindings (top)) v/f (eval-exp exp))]
                 [(lett deflist exp) (process-lets deflist exp)]
