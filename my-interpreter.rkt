@@ -34,7 +34,11 @@
            [(pgm deflist)
             (begin
               (map (lambda (def) (processdef def (top))) deflist)
-              (return-value-of-main (top)))]))
+              (let ([main-val (return-value-of-main (top))])
+                (pop)
+                (push (createframe (make-hash '()) (emptyframe)))
+                (set! framenumber 0)
+                main-val))]))
 
 ;;processdef describes how each definition is processed and added to
 ;;the frame fr.
@@ -50,47 +54,79 @@
 ;; The expression evaluator is the heart of the interpreter.
 ;; It will use the functions below
 (define (eval-exp exp)
-  (cond [(symbol? exp) ...]
-        [(boolean? exp) ...]
-        [(number? exp) ...]
-        [(list? exp) ...]
-        [(string? exp)...]
+  (cond [(boolean? exp) exp]
+        [(number? exp) exp]
+        [(list? exp) exp]
+        [(string? exp) exp]
+        [(symbol? exp) (match (search exp (top))
+                         [(emptyframe) (error "Symbol not found")]
+                         [(frame _ b _) (hash-ref b exp)])]
         [else (match exp
-                [(uexp op exp1) ...]
-                [(bexp op exp1 exp2) ...]
-                [(lam var _) ...]
-                [(app exp1 explist)...]
-                ...and so on, fill in these...
+                [(uexp op exp1) (op (eval-exp exp1))]
+                [(bexp op exp1 exp2) (op (eval-exp exp1) (eval-exp exp2))]
+                [(lam var explam) (lambda (binds)
+                                     (begin
+                                       (push (createframe (make-hash (map (lambda (x y) (cons x (eval-exp y))) var binds)) (top)))
+                                       (let ([ret (eval-exp explam)])
+                                         (begin
+                                           (pop)
+                                           ret))))]
+                [(app exp1 explist) ((eval-exp exp1) explist)]
+                [(beginexp explist) (process-beginexp explist)]
+                [(sett v/f exp) (hash-set! (frame-bindings (top)) v/f (eval-exp exp))]
+                [(lett deflist exp) (process-lets deflist exp)]
                 [(debugexp) (begin
                               (print-current-environment (top))
-                              )])]))
+                              )]
+                )]))
 
-;;;An auxilliary function that processes a begin expression
-;(define (process-beginexp explist)
-;  (match expllist
-;   ...
-;
-;;;An auxilliary function that processes a let expression.
-;;;The let definitions are in deflist, and the let body is exp.
-;(define (process-lets deflist exp)
-;  (match deflist
-;    ...
-;
-;;;Prints the current environment running through a chain of frames.
-;;;Note that my struct definitions are such that if fr is a frame,
-;;;then (displayln fr) will print the frame in the format that I have
-;;;shown. 
-;(define (print-current-environment fr)
-;  
-;  ...)
-;
-;;;Search for the symbol sym in an environment that starts with the frame
-;;;fr. We shall make search return either the  emptyframe
-;;;or the frame containing the symbol (note, not the value of the
-;;;symbol itself.
-;
-;(define (search sym fr)
-;...
+  
+;;An auxilliary function that processes a begin expression
+(define (process-beginexp explist)
+  ;(match expllist
+  (last (map eval-exp explist)))
+
+;;An auxilliary function that processes a let expression.
+;;The let definitions are in deflist, and the let body is exp.
+(define (process-lets deflist exp)
+  (let ([curr-fr (createframe (make-hash '()) (top))])
+    (begin
+      (map (lambda(def) (processdef def curr-fr)) deflist)
+      (push curr-fr)
+      (let ([ret (eval-exp exp)])
+        (begin
+          (pop)
+          ret)))))
+
+;;Prints the current environment running through a chain of frames.
+;;Note that my struct definitions are such that if fr is a frame,
+;;then (displayln fr) will print the frame in the format that I have
+;;shown. 
+(define (print-current-environment fr)
+  (match fr
+    [(emptyframe) (begin
+                    (displayln "@@@@@@@@@@@@@@@@@@@@@@@")
+                    (displayln fr))]
+    [(frame _ _ (emptyframe)) (begin
+                                (displayln "@@@@@@@@@@@@@@@@@@@@@@@")
+                                (displayln fr)
+                                (displayln "@@@@@@@@@@@@@@@@@@@@@@@"))]
+    [(frame _ _ p) (begin
+                     (displayln "@@@@@@@@@@@@@@@@@@@@@@@")
+                     (displayln fr)
+                     (print-current-environment p))]))
+
+;;Search for the symbol sym in an environment that starts with the frame
+;;fr. We shall make search return either the  emptyframe
+;;or the frame containing the symbol (note, not the value of the
+;;symbol itself.
+
+(define (search sym fr)
+  (match fr
+    [(emptyframe) fr]
+    [(frame _ b p)
+     (if (hash-has-key? b sym)
+              fr p)]))
                
 
 

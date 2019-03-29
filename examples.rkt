@@ -40,7 +40,7 @@
         (def 'f (lam (list 'g 'x) (app 'g (list (bexp * 'x 'x)))))
         (def 'x 4)
         (def 'h (lam (list 'y) (beginexp (list (debugexp) (bexp + 'x 'y)))))
-        (def 'main1 (app  'f (list 'h 5))))))
+        (def 'main1 (app 'f (list 'h 5))))))
 
 ;;;;;;;;;;;;;;;;;
 
@@ -233,8 +233,3 @@
 	[def  'b 2]
 	[def 'c (lam '() (beginexp (list (debugexp) (bexp + 'a 'b))))]	
         [def 'main (app 'c '())])))
-(define myprog
-  (pgm (list
-        [def 'a (lam (list 'x) (lett (list (def 'b 1) (def 'c 2))
-                               (beginexp (list (debugexp) (bexp + 'x (bexp + 'b 'c))))))]
-        )))

@@ -12,6 +12,6 @@
 ;
 (displayln "\n\nProgram evaluation ********************************\n")
 
-(eval-program myprog)
+(eval-program prog11)
 
 ;;and so on 
