@@ -100,6 +100,24 @@
           (pop)
           ret)))))
 
+(define (process-letss deflist exp fr)
+  (match deflist
+    ['() (begin
+           (push fr)
+           (let ([ret (eval-exp exp)])
+             (begin
+               (pop)
+               ret)))]
+    [(cons a b)
+     (begin
+       (push fr)
+       (let ([curr-fr (createframe (make-hash '()) fr)])
+         (begin
+           (processdef a curr-fr)
+           (let ([ret (process-letss b exp curr-fr)])
+             (begin
+               (pop)
+               ret)))))]))
 ;;Prints the current environment running through a chain of frames.
 ;;Note that my struct definitions are such that if fr is a frame,
 ;;then (displayln fr) will print the frame in the format that I have
@@ -129,6 +147,3 @@
     [(frame _ b p)
      (if (hash-has-key? b sym)
               fr p)]))
-               
-
-

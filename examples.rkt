@@ -37,10 +37,10 @@
 
 (define prog1
   (pgm (list
-        (def 'f (lam (list 'g 'x) (app 'g (list (bexp * 'x 'x)))))
+        (def 'f (lam (list 'g 'x) (begin (list (debugexp) (app 'g (list (bexp * 'x 'x)))))))
         (def 'x 4)
-        (def 'h (lam (list 'y) (beginexp (list (debugexp) (bexp + 'x 'y)))))
-        (def 'main1 (app 'f (list 'h 5))))))
+        (def 'h (lam (list 'y) (bexp + 'x 'y)))
+        (def 'main (app 'f (list 'h 5))))))
 
 ;;;;;;;;;;;;;;;;;
 
