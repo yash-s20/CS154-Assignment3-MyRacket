@@ -34,11 +34,7 @@
            [(pgm deflist)
             (begin
               (map (lambda (def) (processdef def (top))) deflist)
-              (let ([main-val (return-value-of-main (top))])
-                (pop)
-                (push (createframe (make-hash '()) (emptyframe)))
-                (set! framenumber 0)
-                main-val))]))
+              (return-value-of-main (top)))]))
 
 ;;processdef describes how each definition is processed and added to
 ;;the frame fr.
@@ -83,7 +79,11 @@
                               (print-current-environment (top))
                               )]
                 [(iff boolexp exp1 exp2)
-                 (if (eval-exp boolexp) (eval-exp exp1) (eval-exp exp2))] 
+                 (if (eval-exp boolexp) (eval-exp exp1) (eval-exp exp2))]
+                [(lets deflist exp) (process-letss deflist exp (top))]
+                [(defexp deflist exp) (begin
+                                        (map (lambda(def) (processdef def (top))) deflist)
+                                        (eval-exp exp))]
                 )]))
 
   
@@ -150,14 +150,5 @@
     [(emptyframe) fr]
     [(frame _ b p)
      (if (hash-has-key? b sym)
-              fr p)]))
-
-
-(displayln "Program 2********************************\n")
-;
-;(displayln prog11)
-;
-(displayln "\n\nProgram evaluation ********************************\n")
-
-(eval-program prog2)
+              fr (search sym p))]))
 
