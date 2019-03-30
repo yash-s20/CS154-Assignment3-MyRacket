@@ -64,22 +64,26 @@
         [else (match exp
                 [(uexp op exp1) (op (eval-exp exp1))]
                 [(bexp op exp1 exp2) (op (eval-exp exp1) (eval-exp exp2))]
-                [(lam var explam) exp]
+                [(lam var explam) (closure exp (top))]
                 [(app exp1 explist) (match (eval-exp exp1)
-                                      [(lam var explam)
-                                       ((lambda (binds)
-                                          (begin
-                                            (push (createframe (make-hash (map (lambda (x y) (cons x (eval-exp y))) var binds)) (top)))
-                                            (let ([ret (eval-exp explam)])
-                                              (begin
-                                                (pop)
-                                                ret)))) explist)])]
+                                      [(closure lmbd fr)
+                                       (match lmbd
+                                         [(lam var explam)
+                                          ((lambda (binds)
+                                             (begin
+                                               (push (createframe (make-hash (map (lambda (x y) (cons x (eval-exp y))) var binds)) fr))
+                                               (let ([ret (eval-exp explam)])
+                                                 (begin
+                                                   (pop)
+                                                   ret)))) explist)])])]
                 [(beginexp explist) (process-beginexp explist)]
                 [(sett v/f exp) (hash-set! (frame-bindings (top)) v/f (eval-exp exp))]
                 [(lett deflist exp) (process-lets deflist exp)]
                 [(debugexp) (begin
                               (print-current-environment (top))
                               )]
+                [(iff boolexp exp1 exp2)
+                 (if (eval-exp boolexp) (eval-exp exp1) (eval-exp exp2))] 
                 )]))
 
   
@@ -147,3 +151,13 @@
     [(frame _ b p)
      (if (hash-has-key? b sym)
               fr p)]))
+
+
+(displayln "Program 2********************************\n")
+;
+;(displayln prog11)
+;
+(displayln "\n\nProgram evaluation ********************************\n")
+
+(eval-program prog2)
+

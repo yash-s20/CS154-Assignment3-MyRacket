@@ -6,12 +6,12 @@
 
 
 
-(displayln "Program 11********************************\n")
+(displayln "Program 2********************************\n")
 ;
 ;(displayln prog11)
 ;
 (displayln "\n\nProgram evaluation ********************************\n")
 
-(eval-program prog11)
+(eval-program prog2)
 
 ;;and so on 
