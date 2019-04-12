@@ -78,7 +78,9 @@
                                                    (pop)
                                                    ret)))) explist)])])]
                 [(beginexp explist) (process-beginexp explist)]
-                [(sett v/f exp) (hash-set! (frame-bindings (top)) v/f (eval-exp exp))]
+                [(sett v/f exp) (match (search v/f (top))
+                                  [(emptyframe) (error "Symbol not found")]
+                                  [(frame _ b _) (hash-set! b v/f (eval-exp exp))])]
                 [(lett deflist exp) (process-lets deflist exp)]
 ;                [(debugexp) (begin
 ;                              (print-current-environment (top))
