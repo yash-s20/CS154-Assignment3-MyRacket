@@ -41,6 +41,7 @@
         (def 'x 4)
         (def 'h (lam (list 'y) (beginexp (list (debugexp) (bexp + 'x 'y)))))
         (def 'main1 (app  'f (list 'h 5))))))
+
 ;;;;;;;;;;;;;;;;;
 
 (define prog2
@@ -75,7 +76,7 @@
   (pgm (list
         [def 'main (lets (list (def 'a 1)
                                (def 'b (bexp + 'a 1))
-                               (def 'somelambda (lam '() 'c))
+                               (def 'somelambda (lam '() (beginexp (list (debugexp) 'c))))
                                (def 'debug
                                  (beginexp
                                    (list
@@ -83,10 +84,11 @@
 
                                  
                                (def 'c (bexp + 'a 'b)))
+
+                         
                          (bexp + 'a (app 'somelambda '())))])))
 
-
-;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;
 
 ;(define (make-account balance) 
 ;   (lambda  (amount)
@@ -232,3 +234,67 @@
 	[def  'b 2]
 	[def 'c (lam '() (beginexp (list (debugexp) (bexp + 'a 'b))))]	
         [def 'main (app 'c '())])))
+
+
+
+;(define (f x)
+;  (define (p f) (f (* x x)))
+;  (define (g y)
+;    (cond [(= x 2) (begin (set! x (+ x 2))
+;                          (h (- y 1)))]))
+;  (define (h x)
+;    (p (lambda (w) (+ w x))))
+;  (g x))
+;(f 2)
+
+
+;(define (recurse i q str)
+;  (printf "In recurse, with i and q being ~a and ~a\n" i str)
+;  
+;  (define (p str)
+;    (printf "In p as ~a, the value of i being ~a\n" str i)
+;    (if (= i 0)  (q "q")
+;        (begin (set! i (- i 1))
+;               (set! main (lambda () 0))
+;               (printf "Here is # and the value of i now is ~a\n" i)
+;               (printf "Because of the set! the value of main is now (lambda () 0)), and the environment points to the frame of ~a" str ))))
+;  
+;  (if (> i 0) (recurse (- i 1) p "p")
+;      (p "p")))
+;(define (dummy) 0)
+;(define (main) (recurse 1 dummy "dummy"))
+;(main)
+
+;(define (r i q)
+;  (define (p)
+;    (if (= i 1)  (q)
+;        (begin (set! i (- i 1))
+;               (set! m (lambda () 0)))))
+;  (if (> i 1) (r (- i 1) p)
+;      (p)))
+;(define (d) 0)
+;(define (m) (r 2 d))
+;(m)
+
+(define prog13
+  (pgm (list
+        [def 'recurse
+          (lam (list 'i 'q)
+               (defexp (list
+                        [def 'p
+                          (lam '() (iff (bexp = 'i 1)
+                                        (beginexp (list (debugexp) (app 'q '())))
+                                        (beginexp
+                                          (list
+                                           (sett 'i (bexp - 'i 1))
+                                           (sett 'mainfn (lam '() 0))
+                                           ;This is #
+                                           (debugexp)
+                                           ))))])
+                 (iff (bexp > 'i 1)
+                      (app 'recurse (list (bexp - 'i 1) 'p)) 
+                      (app 'p '()))))]
+        [def 'dummy (lam '() 0)]
+        [def 'mainfn (lam '() (app 'recurse (list 2 'dummy)))]
+        [def 'main (app 'mainfn '())])))
+

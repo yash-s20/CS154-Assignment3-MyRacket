@@ -169,6 +169,7 @@
     [(equal? entity cons) "cons"]
     [(equal? entity =) "="]
     [(equal? entity <) "<"]
+    [(equal? entity >) ">"]
     [(equal? entity <=) "<="]
     [(equal? entity null?) "null?"]))
 

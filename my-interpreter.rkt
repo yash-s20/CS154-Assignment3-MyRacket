@@ -1,8 +1,13 @@
 #lang racket
+(define stacks (make-vector 100))
+(define stacksindex 0)
+
 (require racket/struct)
 (provide (all-defined-out))
 (require "defs.rkt")
 (require "examples.rkt")
+
+
 
 ;;Global definitions. A counter that tracks the framenumber
 (define framenumber 0)
@@ -75,9 +80,12 @@
                 [(beginexp explist) (process-beginexp explist)]
                 [(sett v/f exp) (hash-set! (frame-bindings (top)) v/f (eval-exp exp))]
                 [(lett deflist exp) (process-lets deflist exp)]
+;                [(debugexp) (begin
+;                              (print-current-environment (top))
+;                              )]
                 [(debugexp) (begin
-                              (print-current-environment (top))
-                              )]
+                              (vector-set! stacks stacksindex stack)
+                              (set! stacksindex (+ 1 stacksindex)))]
                 [(iff boolexp exp1 exp2)
                  (if (eval-exp boolexp) (eval-exp exp1) (eval-exp exp2))]
                 [(lets deflist exp) (process-letss deflist exp (top))]
@@ -152,3 +160,9 @@
      (if (hash-has-key? b sym)
               fr (search sym p))]))
 
+(define (cleanup)
+  (set!  stacks (make-vector 100))
+  (set! stacksindex 0)
+  (set! framenumber 0)
+  (set! stack '())
+  (push (createframe (make-hash '()) (emptyframe))))
