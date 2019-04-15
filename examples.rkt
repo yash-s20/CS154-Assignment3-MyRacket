@@ -235,8 +235,6 @@
 	[def 'c (lam '() (beginexp (list (debugexp) (bexp + 'a 'b))))]	
         [def 'main (app 'c '())])))
 
-
-
 ;(define (f x)
 ;  (define (p f) (f (* x x)))
 ;  (define (g y)
@@ -246,7 +244,22 @@
 ;    (p (lambda (w) (+ w x))))
 ;  (g x))
 ;(f 2)
-
+(define prog14
+  (pgm (list
+        (def 'f (lam (list 'x)
+                     (defexp (list
+                              (def 'p (lam (list 'f) (beginexp (list (debugexp) (app 'f (list (bexp * 'x 'x)))))))
+                              (def 'g (lam (list 'y)
+                                           (iff (bexp = 'x 2)
+                                                (beginexp (list
+                                                           (debugexp)
+                                                           (sett 'x (bexp + 'x 2))
+                                                           (app 'h (list (bexp - 'y 1)))))
+                                                (beginexp '()))))
+                              (def 'h (lam (list 'x) (beginexp (list (debugexp) (app 'p (list (lam (list 'w) (bexp + 'w 'x)))))))))
+                       (app 'g (list 'x)))))
+        (def 'main (app 'f (list 2))))))
+                              
 
 ;(define (recurse i q str)
 ;  (printf "In recurse, with i and q being ~a and ~a\n" i str)

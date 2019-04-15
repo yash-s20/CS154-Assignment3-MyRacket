@@ -94,13 +94,20 @@
                 [(defexp deflist exp) (begin
                                         (map (lambda(def) (processdef def (top))) deflist)
                                         (eval-exp exp))]
+                ;[_ (process-condexp lst)]
                 )]))
 
   
 ;;An auxilliary function that processes a begin expression
 (define (process-beginexp explist)
   ;(match expllist
-  (last (map eval-exp explist)))
+  (cond [(not (null? explist))
+         (last (map eval-exp explist))]))
+
+(define (process-condexp condexplist)
+  (match condexplist
+    ['() (eval-exp (beginexp '()))]
+    [(cons (cons bexp exp) rest) (if (eval-exp bexp) (eval-exp exp) (process-condexp rest))]))
 
 ;;An auxilliary function that processes a let expression.
 ;;The let definitions are in deflist, and the let body is exp.
